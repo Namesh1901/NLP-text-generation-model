@@ -1,164 +1,104 @@
-# Shakespeare Text Generator 📜✒️
 
-![Shakespeare](https://img.shields.io/badge/Shakespeare-Text%20Generation-blueviolet)
-![Python](https://img.shields.io/badge/Python-3.7%2B-blue)
-![NLP](https://img.shields.io/badge/NLP-Markov%20Chains-green)
-![License](https://img.shields.io/badge/License-MIT-yellow)
+# Shakespeare Chatbot
 
-> *"To generate, or not to generate: that is the question."* - Shakespeare Text Generator
+This project implements a Shakespeare-style chatbot using two different approaches: a **Markov Chain** model and a **GPT-based** model. It is designed to generate Shakespearean dialogue based on user input by leveraging both traditional and modern AI techniques.
 
-## 📋 Overview
+## Installation
 
-This project uses Natural Language Processing (NLP) techniques to generate new Shakespearean-like text based on patterns learned from three classic Shakespeare plays: Hamlet, Macbeth, and Julius Caesar. The text generation is built using Markov chains and enhanced with part-of-speech tagging for more coherent output.
-
-## 🌟 Features
-
-- Text cleaning and preprocessing of Shakespearean works
-- Simple Markov chain text generation
-- Advanced POS-based Markov chain generation for improved coherence
-- Configurable sentence length and complexity
-
-## 🔧 Installation
+To set up the environment and install the required packages, run the following commands:
 
 ```bash
-# Clone this repository
-git clone https://github.com/yourusername/shakespeare-text-generator.git
-cd shakespeare-text-generator
-
-# Install dependencies
-pip install nltk spacy markovify
-python -m spacy download en_core_web_sm
-python -m nltk.downloader gutenberg
+!pip install nltk
+!pip install spacy
+!pip install markovify
+!pip install transformers
+!pip install torch
+!pip install tqdm
+!pip install matplotlib
+!pip install datasets
+!python -m spacy download en_core_web_sm
 ```
 
-## 📊 Interactive Results
+These packages include the essential libraries for natural language processing, machine learning, and working with pre-trained transformer models.
 
-### Text Cleaning Process
+## Data Preparation
 
-First, we import the raw text from Shakespeare's works and clean it:
+The data is sourced from the **NLTK Gutenberg corpus**, which includes various works by Shakespeare. The code downloads the corpus and prepares it for text generation using both the Markov Chain model and the GPT model.
+
+## Code Explanation
+
+### 1. **Markov Chain Model**
+   - The **Markov Chain** model is a statistical model that generates sequences based on the probabilities of transitions between elements (in this case, words).
+   - The `markovify` library is used to create a model that generates Shakespearean text.
+   - The text is cleaned and processed using regular expressions and NLTK's Gutenberg corpus.
 
 ```python
-hamlet = gutenberg.raw('shakespeare-hamlet.txt')
-# Before cleaning (first 200 characters)
+import markovify
+import nltk
+from nltk.corpus import gutenberg
+
+# Load the Shakespearean texts
+shakespeare_text = gutenberg.raw('shakespeare-hamlet.txt')
+
+# Clean and preprocess text
+text_model = markovify.Text(shakespeare_text)
+
+# Generate Shakespearean-style text
+generated_text = text_model.make_sentence()
 ```
 
-**Raw Text Sample:**
-```
-[The Tragedie of Hamlet by William Shakespeare 1599]
-
-Actus Primus. Scoena Prima.
-
-Enter Barnardo and Francisco, two Centinels.
-
-  Barnardo. Who's there?
-  Fran. Nay answer me: Stan
-```
-
-**After Cleaning:**
-```
-The Tragedie of Hamlet by William Shakespeare Actus Primus. Scoena Prima. Enter Barnardo and Francisco, two Centinels. Barnardo. Who's there? Fran. Nay answer me: Stand and unfold your selfe.
-```
-
-### Basic Text Generation
-
-Using a standard Markov chain (state size = 3), we generate new text that mimics Shakespeare's writing style:
-
-**Sample Output:**
-```
-Brutus, thou sleep'st: awake, and look upon me. Shall Rome stand under one man's awe?
-Come, bitter conduct, come, unsavoury guide! Thou desperate pilot, now at once from thy copious mercy, shower.
-Caesar, I never stood on ceremonies, Yet now they fright me.
-```
-
-### POS-Enhanced Text Generation
-
-With part-of-speech tagging, we create more grammatically coherent sentences:
-
-**Sample Output:**
-```
-I am almost ashamed to say what hath past betweene us in my heart.
-Madam, I sweare I use no art at all.
-This morning like the spirit of a youth that means to be of note, begins betimes.
-Looke where he goes even now out at the gate.
-O gentle son, upon the heat and flame of thy distemper sprinkle cool patience.
-```
-
-## 📈 Model Comparison
-
-| Model Type | Coherence | Authenticity | Speed |
-|------------|-----------|--------------|-------|
-| Basic Markov | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| POS-Enhanced | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
-
-## 🧪 Code Examples
-
-### Text Cleaning Function
+### 2. **GPT-based Model**
+   - The **GPT-based model** uses a pre-trained **GPT-2** model to generate text.
+   - The `transformers` library from Hugging Face is used to load and fine-tune the model for text generation.
+   - This approach produces more context-aware and human-like responses than the Markov model.
 
 ```python
-def text_cleaner(text):
-  text = re.sub(r'--', ' ', text)
-  text = re.sub('[\[].*?[\]]', '', text)
-  text = re.sub(r'(\b|\s+\-?|^\-?)(\d+|\d*\.\d+)\b','', text)
-  text = ' '.join(text.split())
-  return text
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
+
+# Load GPT-2 model and tokenizer
+tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+model = GPT2LMHeadModel.from_pretrained("gpt2")
+
+# Tokenize input text
+input_text = "To be or not to be"
+inputs = tokenizer.encode(input_text, return_tensors="pt")
+
+# Generate Shakespearean-style text
+outputs = model.generate(inputs, max_length=50, num_return_sequences=1)
+generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 ```
 
-### POS-Enhanced Text Generator
+## Comparison of Outputs
 
-```python
-class POSifiedText(markovify.Text):
-   def word_split(self, sentence):
-      return ['::'.join((word.orth_, word.pos_)) for word in nlp(sentence)]
-   def word_join(self, words):
-      sentence = ' '.join(word.split('::')[0] for word in words)
-      return sentence
+### **Markov Chain Output**:
+The Markov Chain model generates text based on the probability of word sequences. It often produces grammatically correct sentences, but lacks the ability to generate contextually rich and coherent conversations.
 
-generator = POSifiedText(shakespeare_sents, state_size=3)
+**Example:**
+```
+To be, or not to be, that is the question.
 ```
 
-## 🚀 How to Use
+### **GPT Output**:
+The GPT-based model, being a more sophisticated deep learning model, generates more contextually relevant and coherent responses. It can maintain better conversation flow and mimic the style of Shakespeare more closely.
 
-Run the Jupyter notebook to train and generate text:
-
-```bash
-jupyter notebook shakespeare_text_generator.ipynb
+**Example:**
+```
+To be, or not to be, that is the question. But the question itself is not what matters. What matters is what we choose to do with our lives.
 ```
 
-Or import the model in your own project:
+### Key Differences:
+- **Markov Chain**: Generates text based on word transition probabilities, which can lead to repetitive or non-sequitur responses.
+- **GPT**: Generates more coherent and contextually rich responses, providing a better user experience, especially for longer conversations.
 
-```python
-from shakespeare_generator import POSifiedText
+## Conclusion
 
-# Load pre-trained model
-with open('models/shakespeare_model.json', 'r') as f:
-    model_json = f.read()
-shakespeare_model = POSifiedText.from_json(model_json)
+This project demonstrates two approaches to creating a Shakespearean-style chatbot. While the **Markov Chain model** is simpler and faster, the **GPT-based model** provides more natural and contextually aware responses. Depending on your use case, you can choose either approach based on performance or quality requirements.
 
-# Generate text
-new_text = shakespeare_model.make_sentence()
-print(new_text)
-```
+## Requirements
 
-## 📝 Results Discussion
+- Python 3.x
+- Jupyter Notebook
 
-The POS-enhanced model produces significantly more coherent text than the basic Markov chain. By understanding parts of speech, the model maintains proper grammatical structure while preserving Shakespeare's unique style and vocabulary.
+## License
 
-While neither model truly understands the semantic meaning of the text, the POS-enhanced version creates output that could sometimes pass for authentic Shakespearean writing in short passages.
-
-## 🔮 Future Improvements
-
-- Implement transformer-based models (like GPT) for comparison
-- Add character-specific text generation (e.g., generate text in Hamlet's style)
-- Create a web interface for interactive text generation
-- Fine-tune hyperparameters for optimal output quality
-- Incorporate semantic understanding for more coherent longer passages
-
-## 📚 References
-
-- Bird, Steven, et al. Natural Language Processing with Python. O'Reilly Media, 2009.
-- Honnibal, Matthew, and Ines Montani. "spaCy 2: Natural Language Understanding with Bloom Embeddings, Convolutional Neural Networks and Incremental Parsing." 2017.
-- Markovify documentation: [https://github.com/jsvine/markovify](https://github.com/jsvine/markovify)
-
----
-
-*"This above all: to thine own self be true, And it must follow, as the night the day, Thou canst not then be false to any man."* - Hamlet
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
